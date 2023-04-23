@@ -6,7 +6,8 @@ import openai
 import os
 from dataclasses import dataclass
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, List
+from colorama import Fore, Style
 
 load_dotenv()
 
@@ -97,10 +98,12 @@ def send_data(data):
 
 
 def sort_by_score(ideas):
-    ...
+    def score_sum(item):
+        return sum(item['score'].values())
+    return sorted(ideas, key=score_sum, reverse=True)
 
 
-def parse_step3_json(data: str):
+def parse_step3_json(data: str) -> List[Entity]:
     json_data = json.loads(data)
 
     result = []
@@ -119,13 +122,13 @@ def parse_step3_json(data: str):
     return result
 
 
-def parse_step2_json(data: str):
+def parse_step2_json(data: str) -> Entity:
     json_data = json.loads(data)
 
     return Entity(json_data["title"], json_data["description"])
 
 
-def parse_step1_json(data: str):
+def parse_step1_json(data: str) -> List[Entity]:
     json_data = json.loads(data)
 
     result = []
@@ -136,11 +139,17 @@ def parse_step1_json(data: str):
     return result
 
 
+def parse_json_list(ideas):
+    ideas = {"ideas": ideas}
+    ...
+
+
 def step3(mixed_ideas):
     """
-    Evaluate, rank & evaluate best results
+    Evaluate, rank & sort best results
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 3: Best results\n" + Style.RESET_ALL)
     evaluated_mixed_ideas = []
     for _ in mixed_ideas:
         prompt = """
@@ -154,6 +163,9 @@ def step3(mixed_ideas):
         """ + json.dumps(mixed_ideas)
         compelition_raw = chat_complete(prompt)
         compelition = parse_step3_json(compelition_raw)
+        # TODO: this needs to be a loop
+        # print(Fore.WHITE + 'Title: ' + compelition)
+        # print('Description: ' + compelition + '\n')
         evaluated_mixed_ideas.append(compelition)
     best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
@@ -164,6 +176,7 @@ def step2(ideas, priv_best_ideas=[]):
     Combine ideas
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 2: Combine ideas\n" + Style.RESET_ALL)
     combinations = get_combinations(ideas+priv_best_ideas)
     mixed_ideas = []
     for _ in combinations:
@@ -183,6 +196,8 @@ def step2(ideas, priv_best_ideas=[]):
         """
         compelition_raw = chat_complete(prompt)
         compelition = parse_step2_json(compelition_raw)
+        print(Fore.WHITE + 'Title: ' + compelition.title)
+        print('Description: ' + compelition.description + '\n')
         mixed_ideas.append(compelition)
     return mixed_ideas
 
@@ -192,6 +207,7 @@ def step1():
     Generate N new ideas
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 1: Generate new ideas\n" + Style.RESET_ALL)
     prompt = f"""
     Generate {INIT_IDEA_SIZE} ideas that are new and useful
         Reply in JSON with this format:
@@ -203,10 +219,16 @@ def step1():
         ]
     """
     compelition = chat_complete(prompt)
-    return parse_step1_json(compelition)
+    raw_ideas = parse_step1_json(compelition)
+    for idea in raw_ideas:
+        print(Fore.WHITE + 'Title: ' + idea.title)
+        print('Description: ' + idea.description + '\n')
+    return raw_ideas
 
 
 def execute_cycle(priv_best_ideas=[]):
+    print(Fore.GREEN + "\n\n#################################################")
+    print("\n\n#################################################" + Style.RESET_ALL)
     step1_compelition = step1()
     step2_compelition = step2(step1_compelition, priv_best_ideas)
     best_ideas = step3(step2_compelition)
@@ -221,7 +243,4 @@ def main():
 
 
 if __name__ == "__main__":
-    prompt = "Insert prompt"
-    response = chat_complete(input())
-
-    print("Response:", response)
+    main()
