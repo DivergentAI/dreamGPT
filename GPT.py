@@ -4,21 +4,34 @@ import random
 
 import openai
 import os
+from dataclasses import dataclass
 from dotenv import load_dotenv
+from typing import Optional
 
 load_dotenv()
 
-OPEN_AI_API_KEY=os.environ.get('SECRET_KEY')
+OPEN_AI_API_KEY = os.environ.get('SECRET_KEY')
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
 
-def chat_complete(messages ,model="gpt-4"):
+
+@dataclass
+class Entity:
+    title: str
+    description: str
+    implementation_score: Optional[int] = None
+    usefulness_score: Optional[int] = None
+    innovation_score: Optional[int] = None
+
+
+def chat_complete(messages, model="gpt-4"):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages
-)
+    )
     return response
+
 
 def chat_test():
     messages = [
@@ -26,6 +39,8 @@ def chat_test():
         {"role": "user", "content": "Hi, neighbour"},
     ]
     print(chat_complete(messages))
+
+
 """ Input Message structure
     [
         {"role": "system", "content": ""},
@@ -65,6 +80,7 @@ def chat_test():
     }
 ]"""
 
+
 def get_combinations(ideas):
 
     all_combinations = list(itertools.combinations(ideas, 2))
@@ -75,14 +91,50 @@ def get_combinations(ideas):
 
     return all_combinations[:MIX_IDEA_SIZE]
 
+
 def send_data(data):
     ...
+
 
 def sort_by_score(ideas):
     ...
 
-def parse_json():
-    ...
+
+def parse_step3_json(data: str):
+    json_data = json.loads(data)
+
+    result = []
+
+    for item in json_data:
+        result.append(
+            Entity(
+                item["title"],
+                item["description"],
+                item["score"]["implementation"],
+                item["score"]["usefulness"],
+                item["score"]["innovation"]
+            )
+        )
+
+    return result
+
+
+def parse_step2_json(data: str):
+    json_data = json.loads(data)
+
+    return Entity(json_data["title"], json_data["description"])
+
+
+def parse_step1_json(data: str):
+    json_data = json.loads(data)
+
+    result = []
+
+    for item in json_data:
+        result.append(Entity(item["title"], item["description"]))
+
+    return result
+
 
 def step3(mixed_ideas):
     """
@@ -101,10 +153,11 @@ def step3(mixed_ideas):
         }
         """ + json.dumps(mixed_ideas)
         compelition_raw = chat_complete(prompt)
-        compelition = parse_json(compelition_raw)
+        compelition = parse_step3_json(compelition_raw)
         evaluated_mixed_ideas.append(compelition)
     best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
+
 
 def step2(ideas, priv_best_ideas=[]):
     """
@@ -129,11 +182,9 @@ def step2(ideas, priv_best_ideas=[]):
         ]
         """
         compelition_raw = chat_complete(prompt)
-        compelition = parse_json(compelition_raw)
+        compelition = parse_step2_json(compelition_raw)
         mixed_ideas.append(compelition)
     return mixed_ideas
-
-
 
 
 def step1():
@@ -152,9 +203,7 @@ def step1():
         ]
     """
     compelition = chat_complete(prompt)
-    return parse_json_list(compelition)
-
-
+    return parse_step1_json(compelition)
 
 
 def execute_cycle(priv_best_ideas=[]):
@@ -164,14 +213,15 @@ def execute_cycle(priv_best_ideas=[]):
     send_data(best_ideas)
     return best_ideas
 
+
 def main():
     best_ideas = []
     while True:
-       best_ideas = execute_cycle(best_ideas)
+        best_ideas = execute_cycle(best_ideas)
 
 
 if __name__ == "__main__":
     prompt = "Insert prompt"
     response = chat_complete(input())
-    
+
     print("Response:", response)
