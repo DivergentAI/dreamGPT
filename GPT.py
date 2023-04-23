@@ -120,20 +120,13 @@ Given the following JSON add a score (0 to 10) in the following format and evalu
   "innovation": ...
 }
 
-[
-    {
-        "title": "Smart Wardrobe",
-        "description": "A device that combines a smart home garden and a virtual personal stylist. The device will be able to recommend clothing and accessories based on a person's preferences, body type, and occasion. It will also be able to grow plants indoors using hydroponics and AI, which can be used to make natural dyes or fabrics. The device will connect to a smartphone app where users can monitor and control the device."
-    },
     {
       "title": "Smart Home Recycling System",
       "description": "A device that combines a smart home garden and a smart recycling bin. The device will be able to detect and sort different types of waste using computer vision and machine learning. It will also be able to grow plants indoors using hydroponics and AI, which can be used to compost organic waste. The device will connect to a smartphone app where users can monitor and control the device and optimize their recycling and gardening efforts."
     }
-]
 """
 
 RANK_RESPONSE="""
-[
     {
       "title": "Smart Wardrobe",
       "description": "A device that combines a smart home garden and a virtual personal stylist. The device will be able to recommend clothing and accessories based on a person's preferences, body type, and occasion. It will also be able to grow plants indoors using hydroponics and AI, which can be used to make natural dyes or fabrics. The device will connect to a smartphone app where users can monitor and control the device.",
@@ -142,21 +135,11 @@ RANK_RESPONSE="""
         "usefulness": 9,
         "innovation": 7
       }
-    },
-    {
-      "title": "Smart Home Recycling System",
-      "description": "A device that combines a smart home garden and a smart recycling bin. The device will be able to detect and sort different types of waste using computer vision and machine learning. It will also be able to grow plants indoors using hydroponics and AI, which can be used to compost organic waste. The device will connect to a smartphone app where users can monitor and control the device and optimize their recycling and gardening efforts.",
-      "score": {
-        "implementation": 9,
-        "usefulness": 10,
-        "innovation": 8
-      }
     }
-]
 """
 
 
-def rank_complete(entity_list):
+def rank_complete(entity):
     rank_prompt_use = f"""
     Given the following JSON add a score (0 to 10) in the following format and evaluate the idea in
     terms of how easy it is to implement, how useful it is to humanity, and how innovative it is
@@ -167,7 +150,10 @@ def rank_complete(entity_list):
       "innovation": ...
     }}
 
-    {entity_list}
+    {{
+      "title": {entity.title},
+      "description": {entity.description}
+      }}
     """
     rank_message = [
         {"role": "system", "content": CONTEXT_PROMPT},
