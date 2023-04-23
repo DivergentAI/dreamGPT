@@ -4,11 +4,14 @@ import random
 
 import openai
 import os
+from dataclasses import dataclass
 from dotenv import load_dotenv
+from typing import Optional, List
+from colorama import Fore, Style
 
 load_dotenv()
 
-OPEN_AI_API_KEY=os.environ.get('SECRET_KEY')
+OPEN_AI_API_KEY = os.environ.get('SECRET_KEY')
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
@@ -184,12 +187,26 @@ def chat_complete(messages ,model="gpt-4"):
 )
     return response.data.choices[0].message
 
+
+@dataclass
+class Entity:
+    title: str
+    description: str
+    implementation_score: Optional[int] = None
+    usefulness_score: Optional[int] = None
+    innovation_score: Optional[int] = None
+
+
+
+
 def chat_test():
     messages = [
         {"role": "system", "content": "You are a friendly neighbour GPT"},
         {"role": "user", "content": "Hi, neighbour"},
     ]
     print(chat_complete(messages))
+
+
 """ Input Message structure
     [
         {"role": "system", "content": ""},
@@ -229,6 +246,7 @@ def chat_test():
     }
 ]"""
 
+
 def get_combinations(ideas):
 
     all_combinations = list(itertools.combinations(ideas, 2))
@@ -239,20 +257,64 @@ def get_combinations(ideas):
 
     return all_combinations[:MIX_IDEA_SIZE]
 
+
 def send_data(data):
     ...
 
+
 def sort_by_score(ideas):
+    def score_sum(item):
+        return sum(item['score'].values())
+    return sorted(ideas, key=score_sum, reverse=True)
+
+
+def parse_step3_json(data: str) -> List[Entity]:
+    json_data = json.loads(data)
+
+    result = []
+
+    for item in json_data:
+        result.append(
+            Entity(
+                item["title"],
+                item["description"],
+                item["score"]["implementation"],
+                item["score"]["usefulness"],
+                item["score"]["innovation"]
+            )
+        )
+
+    return result
+
+
+def parse_step2_json(data: str) -> Entity:
+    json_data = json.loads(data)
+
+    return Entity(json_data["title"], json_data["description"])
+
+
+def parse_step1_json(data: str) -> List[Entity]:
+    json_data = json.loads(data)
+
+    result = []
+
+    for item in json_data:
+        result.append(Entity(item["title"], item["description"]))
+
+    return result
+
+
+def parse_json_list(ideas):
+    ideas = {"ideas": ideas}
     ...
 
-def parse_json():
-    ...
 
 def step3(mixed_ideas):
     """
-    Evaluate, rank & evaluate best results
+    Evaluate, rank & sort best results
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 3: Best results\n" + Style.RESET_ALL)
     evaluated_mixed_ideas = []
     for _ in mixed_ideas:
         prompt = """
@@ -265,26 +327,37 @@ def step3(mixed_ideas):
         }
         """ + json.dumps(mixed_ideas)
         compelition_raw = chat_complete(rank_complete())
-        compelition = parse_json(compelition_raw)
+        compelition: List[Entity] = parse_step3_json(compelition_raw)
+        # TODO: this needs to be a loop
+        compelition: Entity = compelition[0]
+        print(Fore.WHITE + 'Title: ' + compelition.title)
+        print(Fore.WHITE + 'Implementation score: ' + compelition.implementation_score)
+        print(Fore.WHITE + 'Usefullness score: ' + compelition.usefulness_score)
+        print(Fore.WHITE + 'Innovation score: ' + compelition.innovation_score)
+
+        
+        print('Description: ' + compelition.description + '\n')
         evaluated_mixed_ideas.append(compelition)
     best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
+
 
 def step2(ideas, priv_best_ideas=[]):
     """
     Combine ideas
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 2: Combine ideas\n" + Style.RESET_ALL)
     combinations = get_combinations(ideas+priv_best_ideas)
     mixed_ideas = []
     for combo in combinations:
         i1, i2 = combo[0], combo[1]
         compelition_raw = chat_complete(combine_complete(i1.title, i1.description, i2.title2, i2.description))
-        compelition = parse_json(compelition_raw)
+        compelition: Entity = parse_step2_json(compelition_raw)
+        print(Fore.WHITE + 'Title: ' + compelition.title)
+        print('Description: ' + compelition.description + '\n')
         mixed_ideas.append(compelition)
     return mixed_ideas
-
-
 
 
 def step1():
@@ -292,26 +365,29 @@ def step1():
     Generate N new ideas
     :return:
     """
+    print(Fore.YELLOW + "\n\nStep 1: Generate new ideas\n" + Style.RESET_ALL)
     compelition = chat_complete(GENERATE_MESSAGE)
-    return parse_json_list(compelition)
-
-
+    raw_ideas: List[Entity] = parse_step1_json(compelition)
+    for idea in raw_ideas:
+        print(Fore.WHITE + 'Title: ' + idea.title)
+        print('Description: ' + idea.description + '\n')
+    return raw_ideas
 
 def execute_cycle(priv_best_ideas=[]):
+    print(Fore.GREEN + "\n\n#################################################")
+    print("\n\n#################################################" + Style.RESET_ALL)
     step1_compelition = step1()
     step2_compelition = step2(step1_compelition, priv_best_ideas)
     best_ideas = step3(step2_compelition)
-    send_data(best_ideas)
+    # send_data(best_ideas)
     return best_ideas
+
 
 def main():
     best_ideas = []
     while True:
-       best_ideas = execute_cycle(best_ideas)
+        best_ideas = execute_cycle(best_ideas)
 
 
 if __name__ == "__main__":
-    prompt = "Insert prompt"
-    response = chat_complete(input())
-    
-    print("Response:", response)
+    main()
