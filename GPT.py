@@ -5,13 +5,13 @@ import random
 import openai
 import os
 from dataclasses import dataclass
-from dotenv import load_dotenv
+# from dotenv
 from typing import Optional, List
 from colorama import Fore, Style
+# from pydantic import BaseModel
+# load_dotenv()
 
-load_dotenv()
-
-OPEN_AI_API_KEY = os.environ.get('SECRET_KEY')
+openai.api_key = "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"
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
@@ -30,13 +30,13 @@ You will brainstorm and develop creative concepts and ideas that could potential
 develop a new product, service, or business model. Generate {INIT_IDEA_SIZE} ideas that are new and useful.
 Reply in JSON with this format:
 [
-  {
+  {{
     "title": ...
     "description": ...
-  }
+  }}
 ]
 """
-EXAMPLE_GENERATION ="""
+EXAMPLE_GENERATION = """
 [
     {
       "title": "Smart Home Garden",
@@ -87,6 +87,7 @@ COMBINE_RESPONSE = """
 ]
 """
 
+
 def combine_complete(title_1, description_1, title_2, description_2):
     combine_prompt_use = f"""
     Given the following JSON, create a single item which takes both ideas and combines a single, 
@@ -106,11 +107,13 @@ def combine_complete(title_1, description_1, title_2, description_2):
         {"role": "system", "content": CONTEXT_PROMPT},
         {"role": "user", "content": COMBINE_PROMPT},
         {"role": "assistant", "content": COMBINE_RESPONSE},
-        {"role": "user", "content":combine_prompt_use}
+        {"role": "user", "content": combine_prompt_use}
     ]
     return combine_message
 
+
 RANK_PROMPT = """
+Respond with JSON data only!!!
 Given the following JSON add a score (0 to 10) in the following format and evaluate the idea in
  terms of how easy it is to implement, how useful it is to humanity, and how innovative it is
 
@@ -126,7 +129,7 @@ Given the following JSON add a score (0 to 10) in the following format and evalu
     }
 """
 
-RANK_RESPONSE="""
+RANK_RESPONSE = """
     {
       "title": "Smart Wardrobe",
       "description": "A device that combines a smart home garden and a virtual personal stylist. The device will be able to recommend clothing and accessories based on a person's preferences, body type, and occasion. It will also be able to grow plants indoors using hydroponics and AI, which can be used to make natural dyes or fabrics. The device will connect to a smartphone app where users can monitor and control the device.",
@@ -141,6 +144,7 @@ RANK_RESPONSE="""
 
 def rank_complete(entity):
     rank_prompt_use = f"""
+    Respond with JSON data only!!!
     Given the following JSON add a score (0 to 10) in the following format and evaluate the idea in
     terms of how easy it is to implement, how useful it is to humanity, and how innovative it is
     
@@ -163,26 +167,23 @@ def rank_complete(entity):
     ]
 
     return rank_message
-    
 
 
-def chat_complete(messages ,model="gpt-4"):
+def chat_complete(messages, model="gpt-3.5-turbo"):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages
-)
-    return response.data.choices[0].message
+    )
+    return response.choices[0].message
 
 
 @dataclass
-class Entity:
+class Entity():
     title: str
     description: str
     implementation_score: Optional[int] = None
     usefulness_score: Optional[int] = None
     innovation_score: Optional[int] = None
-
-
 
 
 def chat_test():
@@ -259,16 +260,25 @@ def parse_step3_json(data: str) -> List[Entity]:
 
     result = []
 
-    for item in json_data:
-        result.append(
-            Entity(
-                item["title"],
-                item["description"],
-                item["score"]["implementation"],
-                item["score"]["usefulness"],
-                item["score"]["innovation"]
-            )
+    # for item in json_data:
+    #     result.append(
+    #         Entity(
+    #             item["title"],
+    #             item["description"],
+    #             item["score"]["implementation"],
+    #             item["score"]["usefulness"],
+    #             item["score"]["innovation"]
+    #         )
+    #     )
+    result.append(
+        Entity(
+            json_data["title"],
+            json_data["description"],
+            json_data["score"]["implementation"],
+            json_data["score"]["usefulness"],
+            json_data["score"]["innovation"]
         )
+    )
 
     return result
 
@@ -276,7 +286,7 @@ def parse_step3_json(data: str) -> List[Entity]:
 def parse_step2_json(data: str) -> Entity:
     json_data = json.loads(data)
 
-    return Entity(json_data["title"], json_data["description"])
+    return Entity(json_data[0]["title"], json_data[0]["description"])
 
 
 def parse_step1_json(data: str) -> List[Entity]:
@@ -302,29 +312,31 @@ def step3(mixed_ideas):
     """
     print(Fore.YELLOW + "\n\nStep 3: Best results\n" + Style.RESET_ALL)
     evaluated_mixed_ideas = []
-    for _ in mixed_ideas:
-        prompt = """
-        Given the following JSON add a score (0 to 10) in the following format and evaluate the idea in terms of how easy it is to implement, how useful it is to humanity, and how innovative it is
+    for idea in mixed_ideas:
+        # prompt = """
+        # Given the following JSON add a score (0 to 10) in the following format and evaluate the idea in terms of how easy it is to implement, how useful it is to humanity, and how innovative it is
 
-        "score": {
-          "implementation" ...
-          "usefulness": ...
-          "innovation": ...
-        }
-        """ + json.dumps(mixed_ideas)
-        compelition_raw = chat_complete(rank_complete())
-        compelition: List[Entity] = parse_step3_json(compelition_raw)
+        # "score": {
+        #   "implementation" ...
+        #   "usefulness": ...
+        #   "innovation": ...
+        # }
+        # """ + idea.json()
+        compelition_raw = chat_complete(rank_complete(idea))
+        compelition: List[Entity] = parse_step3_json(compelition_raw.content)
         # TODO: this needs to be a loop
         compelition: Entity = compelition[0]
         print(Fore.WHITE + 'Title: ' + compelition.title)
-        print(Fore.WHITE + 'Implementation score: ' + compelition.implementation_score)
-        print(Fore.WHITE + 'Usefullness score: ' + compelition.usefulness_score)
-        print(Fore.WHITE + 'Innovation score: ' + compelition.innovation_score)
+        print(Fore.WHITE + 'Implementation score: ' +
+              str(compelition.implementation_score))
+        print(Fore.WHITE + 'Usefullness score: ' +
+              str(compelition.usefulness_score))
+        print(Fore.WHITE + 'Innovation score: ' +
+              str(compelition.innovation_score))
 
-        
         print('Description: ' + compelition.description + '\n')
         evaluated_mixed_ideas.append(compelition)
-    best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
+    # best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
 
 
@@ -338,8 +350,9 @@ def step2(ideas, priv_best_ideas=[]):
     mixed_ideas = []
     for combo in combinations:
         i1, i2 = combo[0], combo[1]
-        compelition_raw = chat_complete(combine_complete(i1.title, i1.description, i2.title2, i2.description))
-        compelition: Entity = parse_step2_json(compelition_raw)
+        compelition_raw = chat_complete(combine_complete(
+            i1.title, i1.description, i2.title, i2.description))
+        compelition: Entity = parse_step2_json(compelition_raw.content)
         print(Fore.WHITE + 'Title: ' + compelition.title)
         print('Description: ' + compelition.description + '\n')
         mixed_ideas.append(compelition)
@@ -353,11 +366,12 @@ def step1():
     """
     print(Fore.YELLOW + "\n\nStep 1: Generate new ideas\n" + Style.RESET_ALL)
     compelition = chat_complete(GENERATE_MESSAGE)
-    raw_ideas: List[Entity] = parse_step1_json(compelition)
+    raw_ideas: List[Entity] = parse_step1_json(compelition.content)
     for idea in raw_ideas:
         print(Fore.WHITE + 'Title: ' + idea.title)
         print('Description: ' + idea.description + '\n')
     return raw_ideas
+
 
 def execute_cycle(priv_best_ideas=[]):
     print(Fore.GREEN + "\n\n#################################################")
