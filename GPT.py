@@ -65,7 +65,6 @@ def chat_test():
     }
 ]"""
 
-
 def get_combinations(ideas):
 
     all_combinations = list(itertools.combinations(ideas, 2))
