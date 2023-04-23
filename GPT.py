@@ -79,10 +79,16 @@ def send_data(data):
     ...
 
 def sort_by_score(ideas):
-    ...
+    def score_sum(item):
+        return sum(item['score'].values())
+    return sorted(ideas, key=score_sum, reverse=True)
 
 def parse_json():
     ...
+
+def parse_json_list():
+    ...
+
 
 def step3(mixed_ideas):
     """
@@ -171,7 +177,4 @@ def main():
 
 
 if __name__ == "__main__":
-    prompt = "Insert prompt"
-    response = chat_complete(input())
-    
-    print("Response:", response)
+    main()
