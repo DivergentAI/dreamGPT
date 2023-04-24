@@ -11,7 +11,8 @@ from colorama import Fore, Style
 # from pydantic import BaseModel
 # load_dotenv()
 
-openai.api_key = "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"
+# TODO: put your api key here
+openai.api_key = ""
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
@@ -337,7 +338,7 @@ def step3(mixed_ideas):
         print('Description: ' + compelition.description + '\n')
         evaluated_mixed_ideas.append(compelition)
     # best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
-    return best_ideas
+    return evaluated_mixed_ideas[:len(mixed_ideas)//2]
 
 
 def step2(ideas, priv_best_ideas=[]):
