@@ -5,14 +5,14 @@ import random
 import openai
 import os
 from dataclasses import dataclass
-# from dotenv
+from dotenv import load_dotenv
 from typing import Optional, List
 from colorama import Fore, Style
 # from pydantic import BaseModel
-# load_dotenv()
+load_dotenv()
 
 # TODO: put your api key here
-openai.api_key = ""
+openai.api_key = os.getenv("OPENAI_API_KEY")
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
