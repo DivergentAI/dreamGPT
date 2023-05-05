@@ -1,17 +1,18 @@
 import itertools
 import json
 import random
+import time
 
 import openai
+from dotenv import load_dotenv
 import os
 from dataclasses import dataclass
-# from dotenv
 from typing import Optional, List
 from colorama import Fore, Style
-# from pydantic import BaseModel
-# load_dotenv()
 
-openai.api_key = "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"
+load_dotenv()
+
+openai.api_key = os.environ['OPENAI_API_KEY']
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
@@ -169,12 +170,25 @@ def rank_complete(entity):
     return rank_message
 
 
-def chat_complete(messages, model="gpt-3.5-turbo"):
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages
-    )
-    return response.choices[0].message
+def chat_complete(messages, model="gpt-3.5-turbo", max_retries=3, initial_wait_time=1):
+    retries = 0
+    wait_time = initial_wait_time
+    while retries <= max_retries:
+        try:
+            # Make the API request
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages
+            )
+            return response.choices[0].message
+        except openai.error.RateLimitError as e:
+            # If RateLimitError is encountered, apply exponential backoff and retry
+            print("RateLimitError: retrying...")
+            if retries == max_retries:
+                raise Exception("Maximum retries reached. Unable to complete the request.") from e
+            time.sleep(wait_time)
+            wait_time *= 2
+            retries += 1
 
 
 @dataclass
@@ -185,6 +199,14 @@ class Entity():
     usefulness_score: Optional[int] = None
     innovation_score: Optional[int] = None
 
+    def getScore(self):
+        # Create a list of scores that are not None
+        scores = [score for score in (self.implementation_score, self.usefulness_score, self.innovation_score) if score is not None]
+        
+        # Calculate the average of the scores, if the list is not empty
+        average_score = sum(scores) / len(scores) if scores else None
+        
+        return average_score    
 
 def chat_test():
     messages = [
@@ -251,7 +273,18 @@ def send_data(data):
 
 def sort_by_score(ideas):
     def score_sum(item):
-        return sum(item['score'].values())
+        # If the item is a dictionary, use the original method to get the scores
+        if isinstance(item, dict):
+            return sum(item['score'].values())
+        # If the item is an instance of the 'Entity' class, use the appropriate
+        # attribute or method to get the scores (assuming 'get_scores' is a method
+        # that returns the scores as a dictionary, replace this with the correct method)
+        elif isinstance(item, Entity):
+            return item.getScore()
+        # Handle other cases if needed
+        else:
+            return 0  # Or raise an exception
+    
     return sorted(ideas, key=score_sum, reverse=True)
 
 
@@ -284,18 +317,26 @@ def parse_step3_json(data: str) -> List[Entity]:
 
 
 def parse_step2_json(data: str) -> Entity:
-    json_data = json.loads(data)
-
-    return Entity(json_data[0]["title"], json_data[0]["description"])
+    try:
+        json_data = json.loads(data)
+        return Entity(json_data[0]["title"], json_data[0]["description"])
+    except (json.JSONDecodeError, IndexError, KeyError, TypeError):
+        return None
 
 
 def parse_step1_json(data: str) -> List[Entity]:
-    json_data = json.loads(data)
+    try:
+        json_data = json.loads(data)
+    except json.JSONDecodeError:
+        return []
 
     result = []
 
     for item in json_data:
-        result.append(Entity(item["title"], item["description"]))
+        try:
+            result.append(Entity(item["title"], item["description"]))
+        except (TypeError, KeyError):
+            continue
 
     return result
 
@@ -336,7 +377,7 @@ def step3(mixed_ideas):
 
         print('Description: ' + compelition.description + '\n')
         evaluated_mixed_ideas.append(compelition)
-    # best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
+    best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
 
 
@@ -353,9 +394,12 @@ def step2(ideas, priv_best_ideas=[]):
         compelition_raw = chat_complete(combine_complete(
             i1.title, i1.description, i2.title, i2.description))
         compelition: Entity = parse_step2_json(compelition_raw.content)
-        print(Fore.WHITE + 'Title: ' + compelition.title)
-        print('Description: ' + compelition.description + '\n')
-        mixed_ideas.append(compelition)
+        if compelition is None:
+            print("Failed to parse JSON data.")
+        else:
+            print(Fore.WHITE + 'Title: ' + compelition.title)
+            print('Description: ' + compelition.description + '\n')
+            mixed_ideas.append(compelition)
     return mixed_ideas
 
 
