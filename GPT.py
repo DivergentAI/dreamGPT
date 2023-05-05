@@ -13,6 +13,7 @@ from colorama import Fore, Style
 load_dotenv()
 
 openai.api_key = os.environ['OPENAI_API_KEY']
+
 INIT_IDEA_SIZE = 4
 MIX_IDEA_SIZE = 4
 STORAGE = []
@@ -363,9 +364,17 @@ def step3(mixed_ideas):
         #   "innovation": ...
         # }
         # """ + idea.json()
-        compelition_raw = chat_complete(rank_complete(idea))
-        compelition: List[Entity] = parse_step3_json(compelition_raw.content)
-        # TODO: this needs to be a loop
+
+        success = False
+        while not success:
+            try:
+                compelition_raw = chat_complete(rank_complete(idea))
+                compelition: List[Entity] = parse_step3_json(
+                    compelition_raw.content)
+                success = True
+            except json.decoder.JSONDecodeError as e:
+                pass
+
         compelition: Entity = compelition[0]
         print(Fore.WHITE + 'Title: ' + compelition.title)
         print(Fore.WHITE + 'Implementation score: ' +
@@ -377,6 +386,7 @@ def step3(mixed_ideas):
 
         print('Description: ' + compelition.description + '\n')
         evaluated_mixed_ideas.append(compelition)
+    
     best_ideas = sort_by_score(evaluated_mixed_ideas)[:len(mixed_ideas)//2]
     return best_ideas
 
