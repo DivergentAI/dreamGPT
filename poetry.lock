@@ -588,6 +588,18 @@ urllib3 = ">=1.21.1"
 grpc = ["googleapis-common-protos (>=1.53.0)", "grpc-gateway-protoc-gen-openapiv2 (==0.1.0)", "grpcio (>=1.44.0)", "lz4 (>=3.1.3)", "protobuf (==3.19.3)"]
 
 [[package]]
+name = "prompt-engine-py"
+version = "0.0.2"
+description = "This package is a utility library for creating and maintaining prompts for Large Language Models (LLMs)."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "prompt-engine-py-0.0.2.tar.gz", hash = "sha256:d3d38aca4ee88f003b8e14385812d4d18e8cfc5d12fcf6c6991154f155327778"},
+    {file = "prompt_engine_py-0.0.2-py3-none-any.whl", hash = "sha256:6b956a9c2330ddf6c377f1a68c819c8ea99d65aad6a3cc2a3af9c01e6c995762"},
+]
+
+[[package]]
 name = "pycodestyle"
 version = "2.10.0"
 description = "Python style guide checker"
@@ -934,4 +946,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2f6aa2aef040572dd31171f6efe99d8705cfc4a97c756ea1a677f26f56130355"
+content-hash = "95f8883621edeec395148a91a5873e344bb2632ded7c317eac76c89a24ad180a"
