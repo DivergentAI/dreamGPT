@@ -1,6 +1,14 @@
 import random
+import os
 
 def dreamPrompt(count = 6):
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "commonWords.txt")
+    wordFile = open(file_path, "r")
+    words = wordFile.readlines()
+    wordFile.close()
+    cleanWords = [line.strip() for line in words]
+    randomWords = random.sample(cleanWords, count)
+    print(randomWords)
     PERSONAS = ["I want to you to act as an Ideation Expert. An Ideation Expert has strong creative, problem-solving and analytical skills, " \
                   "with knowledge of research methods and design thinking. They should be adept at identifying " \
                   "opportunities and generating ideas, as well as have the ability to communicate and collaborate " \
@@ -27,7 +35,7 @@ def dreamPrompt(count = 6):
                   " - usefulnessScore: measures the potential benefit of use of this concept.\n" \
                   " - easeOfImplementationScore: measures how easy it would be to make this concept a reality.\n" \
                   " - impactScore: measures the potential positive impact in the world of this concept.\n\n" \
-                  "You will generate a JSON list with 1 concept."
+                  "You will generate a JSON list with 1 concept related to [\"art\"]."
     PROMPT_EXAMPLE_1 = """[
   {
     "title": "Interactive Art Installation",
@@ -39,7 +47,7 @@ def dreamPrompt(count = 6):
     "impactScore": 0.5
   }
 ]"""
-    PROMPT_USER_INPUT_2 = "You will generate a JSON list with 2 concepts. Don't repeat the previous examples."
+    PROMPT_USER_INPUT_2 = "You will generate a JSON list with 2 concepts related to [\"healthcare\", \"fashion\"]. Don't repeat the previous examples."
     PROMPT_EXAMPLE_2 = """[
   {
     "title": "AR-Assisted Healthcare",
@@ -60,7 +68,8 @@ def dreamPrompt(count = 6):
     "impactScore": 0.8
   }
 ]"""
-    PROMPT_QUERY = f"You will generate a JSON list with {count} concepts. Don't repeat the previous examples."
+    SEPARATOR = "\", \""
+    PROMPT_QUERY = f"You will generate a JSON list with {count} concepts related to [{SEPARATOR.join(randomWords)}]. Don't repeat the previous examples."
 
     return [
         {"role": "system", "content": PROMPT_SYSTEM},
