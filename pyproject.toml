@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "dreamgpt"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "^0.27.4"
+colorama = "^0.4.6"
+pydantic = "^1.10.7"
+python-dotenv = "^1.0.0"
+pinecone-client = "^2.2.1"
+prompt-engine-py = "^0.0.2"
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "dreamgpt.main:main"

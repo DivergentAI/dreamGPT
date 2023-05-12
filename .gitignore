@@ -1,2 +1,4 @@
 .DS_STORE
 .env
+dist
+__pycache__
