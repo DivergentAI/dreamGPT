@@ -1,8 +1,8 @@
 # **dreamGPT**: AI powered inspiration
 
-dreamGPT, the first GPT-based solution that uses hallucinations from LLMs for divergent thinking and generating new innovative ideas. Hallucinations are often seen as a negative thing, but what if they could be used for our advantage? dreamGPT is here to show you how. The goal of dreamGPT is to explore as many possibilities as possible, as opposed to most other GPT-based solutions which are focused on solving specific problems.
+dreamGPT, the first GPT-based solution that uses hallucinations from LLMs for divergent thinking to generate new innovative ideas. Hallucinations are often seen as a negative thing, but what if they could be used for our advantage? dreamGPT is here to show you how. The goal of dreamGPT is to explore as many possibilities as possible, as opposed to most other GPT-based solutions which are focused on solving specific problems.
 
-![Screen capture](docs/img/output.jpg))
+![dreamGPT flow](docs/img/dreamGPT-flow.png)
 
 To use dreamGPT, you will need to have the following installed:
 
