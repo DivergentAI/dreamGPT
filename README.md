@@ -23,3 +23,7 @@ Then, you can run the dreamGPT script to generate new ideas:
 
 1. Run `poetry install` to install dependencies.
 2. Run `poetry run start` to start dreamGPT.
+
+## dreamGPT star history
+
+[![Star History Chart](https://api.star-history.com/svg?repos=DivergentAI/dreamGPT&type=Date)](https://star-history.com/#DivergentAI/dreamGPT&Date)
