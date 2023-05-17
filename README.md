@@ -10,6 +10,14 @@ dreamGPT, the first GPT-based solution that uses hallucinations from LLMs for di
 
 <br>
 
+</center>
+
+This is how it works:
+
+<center>
+
+<br>
+
 ![dreamGPT flow](docs/img/dreamGPT-flow.png)
 
 <br>
