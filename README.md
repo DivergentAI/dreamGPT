@@ -44,6 +44,18 @@ Then, you can run the dreamGPT script to generate new ideas:
 1. Run `poetry install` to install dependencies.
 2. Run `poetry run start` to start dreamGPT.
 
+Once you run it, dreamGPT generates a random seed of concepts and will use these as a starting point for its dreaming process. Here is a screenshot of the first iteration. Notice that the scores are not very high. As dreamGPT evolves the dreams you will start to see higher scores with even better ideas.
+
+<center>
+
+<br>
+
+![dreamGPT flow](docs/img/output.jpg)
+
+<br>
+
+</center>
+
 ## dreamGPT star history
 
 [![Star History Chart](https://api.star-history.com/svg?repos=DivergentAI/dreamGPT&type=Date)](https://star-history.com/#DivergentAI/dreamGPT&Date)
