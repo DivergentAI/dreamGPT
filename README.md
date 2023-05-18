@@ -55,7 +55,3 @@ Once you run it, dreamGPT generates a random seed of concepts and will use these
 <br>
 
 </center>
-
-## dreamGPT star history
-
-[![Star History Chart](https://api.star-history.com/svg?repos=DivergentAI/dreamGPT&type=Date)](https://star-history.com/#DivergentAI/dreamGPT&Date)
