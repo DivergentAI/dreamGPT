@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: poetry run start
