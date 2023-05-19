@@ -41,8 +41,22 @@ To use dreamGPT, you will need to have the following installed:
 
 Then, you can run the dreamGPT script to generate new ideas:
 
+### Manually
+
 1. Run `poetry install` to install dependencies.
 2. Run `poetry run start` to start dreamGPT.
+
+## Automatically
+
+I assume that you already have docker and run it in background
+
+1. Run `docker-compose up --build -d` to install all dependencies and start dreamGPT service
+2. To stop dreamGPT service, run command `docker-compose down`
+
+or if you prefer to use Makefile
+
+1. Run command `make start` to install all dependencies and start dreamGPT service
+2. Run command `make stop` to stop dreamGPT service
 
 Once you run it, dreamGPT generates a random seed of concepts and will use these as a starting point for its dreaming process. Here is a screenshot of the first iteration. Notice that the scores are not very high. As dreamGPT evolves the dreams you will start to see higher scores with even better ideas.
 
