@@ -46,7 +46,7 @@ Then, you can run the dreamGPT script to generate new ideas:
 1. Run `poetry install` to install dependencies.
 2. Run `poetry run start` to start dreamGPT.
 
-## Automatically
+### Automatically
 
 I assume that you already have docker and run it in background
 
