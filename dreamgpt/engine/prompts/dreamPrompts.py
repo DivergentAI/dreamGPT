@@ -1,14 +1,22 @@
 import random
 import os
 
-def dreamPrompt(count = 6):
+from dreamgpt.constants import THEME_SEEDS_WEIGHT
+
+def dreamPrompt(themeSeeds, count = 6):
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "commonWords.txt")
     wordFile = open(file_path, "r")
     words = wordFile.readlines()
     wordFile.close()
     cleanWords = [line.strip() for line in words]
-    randomWords = random.sample(cleanWords, count)
-    print(randomWords)
+    randomTopics = []
+    if len(themeSeeds) > 0:
+        seedTopicCount = int(count * THEME_SEEDS_WEIGHT)
+        seedTopics = random.sample(themeSeeds, seedTopicCount)
+        randomTopics = seedTopics + random.sample(cleanWords, count - seedTopicCount)
+    else:
+        randomTopics = random.sample(cleanWords, count)
+    print(randomTopics)
     PERSONAS = ["I want to you to act as an Ideation Expert. An Ideation Expert has strong creative, problem-solving and analytical skills, " \
                   "with knowledge of research methods and design thinking. They should be adept at identifying " \
                   "opportunities and generating ideas, as well as have the ability to communicate and collaborate " \
@@ -69,7 +77,7 @@ def dreamPrompt(count = 6):
   }
 ]"""
     SEPARATOR = "\", \""
-    PROMPT_QUERY = f"You will generate a JSON list with {count} concepts related to [{SEPARATOR.join(randomWords)}]. Don't repeat the previous examples."
+    PROMPT_QUERY = f"You will generate a JSON list with {count} concepts related to [{SEPARATOR.join(randomTopics)}]. Don't repeat the previous examples."
 
     return [
         {"role": "system", "content": PROMPT_SYSTEM},

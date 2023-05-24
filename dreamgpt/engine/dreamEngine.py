@@ -1,7 +1,9 @@
 
 import random
+from dreamgpt.constants import THEME_SEED_COUNT
 from dreamgpt.engine.prompts.combinePrompts import combinePrompt
 from dreamgpt.engine.prompts.dreamPrompts import dreamPrompt
+from dreamgpt.engine.prompts.themeExpansionPrompts import themeExpansionPrompt
 from dreamgpt.llm.llm import chatComplete
 from dreamgpt.store.entity import getEntityFromJSON
 from dreamgpt.store.store import Store
@@ -10,10 +12,20 @@ class DreamEngine:
   def __init__(self):
       self.store = Store()
 
-  def dream(self):
+  def expandTheme(self, theme):
+      if theme is None:
+          return []
+      else:
+          print(f"Generating seeds for \"{theme}\"...")
+          themeConcepts = []
+          gptPrompt = themeExpansionPrompt(theme, THEME_SEED_COUNT)
+          themeConcepts = chatComplete(gptPrompt)
+          return themeConcepts
+
+  def dream(self, themeSeeds):
       print("Generating concepts...")
       concepts = []
-      gptPrompt = dreamPrompt()
+      gptPrompt = dreamPrompt(themeSeeds)
       jsonData = chatComplete(gptPrompt)
       try:
           print("Calculating embeddings...")
