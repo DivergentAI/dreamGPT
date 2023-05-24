@@ -43,7 +43,7 @@ Then, you can run the dreamGPT script to generate new ideas:
 
 1. Run `poetry install` to install dependencies.
 2. Run `poetry run start` to start dreamGPT.
-   - If you wish to provide a guiding theme, you can run `poetry run start --theme "your theme here"`.
+   - If you wish to provide a guiding theme, you can run `poetry run start --theme "climate change"`.
 
 Once you run it, dreamGPT generates a random seed of concepts and will use these as a starting point for its dreaming process. Here is a screenshot of the first iteration. Notice that the scores are not very high. As dreamGPT evolves the dreams, you will start to see higher scores with even better ideas.
 
